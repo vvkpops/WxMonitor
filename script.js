@@ -106,18 +106,18 @@ function renderDashboard() {
       </div>
       <div class="flex flex-col gap-2 mb-2">
         <div class="flex gap-2">
-          <input type="number" value="${airport.minCeiling}" step="100"
+          <input type="number" value="${airport.minCeiling ?? ''}" step="100"
             oninput="debouncedUpdateMinima('${airport.icao}', 'minCeiling', this.value)"
             class="p-2 border border-gray-600 rounded-lg w-24 bg-gray-700 text-center focus:ring-2 ring-green-400" />
-          <input type="number" value="${airport.minVis}" step="0.1"
+          <input type="number" value="${airport.minVis ?? ''}" step="0.1"
             oninput="debouncedUpdateMinima('${airport.icao}', 'minVis', this.value)"
             class="p-2 border border-gray-600 rounded-lg w-24 bg-gray-700 text-center focus:ring-2 ring-green-400" />
         </div>
         <div class="flex gap-2 items-center">
-          <input type="number" min="0" max="23" value="${airport.timeFrom !== null ? airport.timeFrom : ''}"
+          <input type="number" min="0" max="23" value="${airport.timeFrom ?? ''}"
             onchange="updateTime('${airport.icao}', 'timeFrom', this.value)"
             class="p-2 border border-gray-600 rounded-lg w-16 bg-gray-700 text-center focus:ring-2 ring-blue-400" /><span>Z to</span>
-          <input type="number" min="0" max="23" value="${airport.timeTo !== null ? airport.timeTo : ''}"
+          <input type="number" min="0" max="23" value="${airport.timeTo ?? ''}"
             onchange="updateTime('${airport.icao}', 'timeTo', this.value)"
             class="p-2 border border-gray-600 rounded-lg w-16 bg-gray-700 text-center focus:ring-2 ring-blue-400" /><span>Z</span>
         </div>
@@ -160,7 +160,7 @@ async function fetchWeather(airport) {
         const cloud = period.clouds?.find(c => ["BKN", "OVC", "VV"].includes(c.type));
         const ceiling = cloud?.base_ft_agl ?? (cloud?.altitude ? cloud.altitude * 100 : null);
         const vis = period.visibility?.value ?? null;
-        if ((ceiling !== null && ceiling < minCeiling) || (vis !== null && vis < minVis)) {
+        if ((ceiling !== null && ceiling <= minCeiling) || (vis !== null && vis <= minVis)) {
           belowMinima = true;
         }
       }
@@ -170,18 +170,21 @@ async function fetchWeather(airport) {
     const alertBox = document.getElementById(`alert-${icao}`);
     const card = document.getElementById(`card-${icao}`);
 
+    if (!alertBox || !card) return;
+
     alertBox.textContent = belowMinima ? "⚠️ Below minima in TAF (selected hours)" : "✅ Conditions above minima";
     alertBox.className = belowMinima
       ? "mt-2 text-sm font-semibold text-red-400"
       : "mt-2 text-sm font-semibold text-green-400";
 
     card.className = belowMinima
-      ? "bg-red-900/80 p-4 rounded-2xl shadow-xl border border-red-400 transition-all duration-500 text-gray-200"
-      : "bg-gray-800 p-4 rounded-2xl shadow-lg border border-green-500 transition-all duration-500 text-gray-200";
+      ? "bg-red-900/80 p-4 rounded-2xl shadow-xl border border-red-400 ring-2 ring-red-400 transition-all duration-500 text-gray-200"
+      : "bg-gray-800 p-4 rounded-2xl shadow-lg border border-green-500 ring-2 ring-green-500 transition-all duration-500 text-gray-200";
 
     if (showOnlyBelowMinima) card.style.display = belowMinima ? "block" : "none";
   } catch {
-    document.getElementById(`alert-${icao}`).textContent = "⚠️ Failed to fetch data";
+    const alertBox = document.getElementById(`alert-${icao}`);
+    if (alertBox) alertBox.textContent = "⚠️ Failed to fetch data";
   }
 }
 
