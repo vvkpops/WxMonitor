@@ -1,24 +1,32 @@
 const apiKey = "KpWgT1e-r9LPmpxOhmsOokTsAlSKP7FKYVLs1mYEmXw";
-const refreshInterval = 5 * 60 * 1000;
 let airports = JSON.parse(localStorage.getItem("airports")) || [];
+let showOnlyBelowMinima = false;
+const belowMinimaMap = {};
+
+function updateClocks() {
+  const now = new Date();
+  document.getElementById("utcClock").textContent = `UTC ${now.toUTCString().slice(17, 25)}`;
+  document.getElementById("localClock").textContent = `Local ${now.toTimeString().slice(0, 8)}`;
+}
+setInterval(updateClocks, 1000);
+updateClocks();
 
 function saveAirports() {
   localStorage.setItem("airports", JSON.stringify(airports));
 }
 
+window.addEventListener("storage", () => {
+  airports = JSON.parse(localStorage.getItem("airports")) || [];
+  renderDashboard();
+});
+
 function addAirport() {
   const input = document.getElementById("icaoInput");
   const icao = input.value.toUpperCase().trim();
   input.value = "";
-
-  if (!icao.match(/^[A-Z]{4}$/)) {
-    alert("Please enter a valid 4-letter ICAO code.");
-    return;
-  }
-
+  if (!icao.match(/^[A-Z]{4}$/)) return alert("Enter valid 4-letter ICAO");
   if (airports.find(a => a.icao === icao)) return;
-
-  airports.push({ icao, minCeiling: 3000, minVis: 3 });
+  airports.push({ icao, minCeiling: 3000, minVis: 3, timeFrom: null, timeTo: null });
   saveAirports();
   renderDashboard();
 }
@@ -29,22 +37,37 @@ function removeAirport(icao) {
   renderDashboard();
 }
 
+const debounce = (func, delay = 300) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), delay);
+  };
+};
+
 function updateMinima(icao, field, value) {
   const airport = airports.find(a => a.icao === icao);
   if (airport) {
     airport[field] = parseFloat(value);
     saveAirports();
-    fetchWeather(airport);
+    renderDashboard();
+  }
+}
+const debouncedUpdateMinima = debounce(updateMinima);
+
+function updateTime(icao, field, value) {
+  const airport = airports.find(a => a.icao === icao);
+  if (airport) {
+    airport[field] = value === "" ? null : parseInt(value);
+    saveAirports();
+    renderDashboard();
   }
 }
 
 function applyGlobalMinima() {
   const ceiling = parseFloat(document.getElementById("globalCeiling").value);
   const vis = parseFloat(document.getElementById("globalVis").value);
-  if (isNaN(ceiling) || isNaN(vis)) {
-    alert("Please enter valid minima values.");
-    return;
-  }
+  if (isNaN(ceiling) || isNaN(vis)) return alert("Enter valid minima");
   airports.forEach(airport => {
     airport.minCeiling = ceiling;
     airport.minVis = vis;
@@ -63,36 +86,58 @@ function setStandardMinima(icao) {
   }
 }
 
+function withinHourWindow(hour, from, to) {
+  if (isNaN(from) || isNaN(to)) return true;
+  return from <= to ? (hour >= from && hour <= to) : (hour >= from || hour <= to);
+}
+
 function renderDashboard() {
   const container = document.getElementById("dashboard");
   container.innerHTML = "";
-
   airports.forEach(airport => {
     const card = document.createElement("div");
-    card.className = "bg-white p-4 rounded shadow relative";
+    card.id = `card-${airport.icao}`;
+    card.className = "bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-700 hover:scale-[1.02] transition-transform duration-300";
 
     card.innerHTML = `
-      <button onclick="removeAirport('${airport.icao}')" class="absolute top-2 right-2 text-red-500 hover:text-red-700">✖</button>
-      <h2 class="text-xl font-bold mb-2">${airport.icao}</h2>
-      <div class="flex flex-col gap-1 mb-2">
-        <div class="flex gap-2">
-          <input type="number" value="${airport.minCeiling}" onchange="updateMinima('${airport.icao}', 'minCeiling', this.value)" class="p-1 border rounded w-24" />
-          <input type="number" value="${airport.minVis}" onchange="updateMinima('${airport.icao}', 'minVis', this.value)" class="p-1 border rounded w-24" />
-        </div>
-        <button onclick="setStandardMinima('${airport.icao}')" class="text-xs text-blue-600 hover:underline self-start">Set Standard Alternate Minima</button>
+      <div class="flex justify-between mb-2">
+        <h2 class="text-xl font-bold tracking-wide">${airport.icao}</h2>
+        <button onclick="removeAirport('${airport.icao}')" class="text-red-400 hover:text-red-600 text-xl leading-none">✖</button>
       </div>
-      <pre id="metar-${airport.icao}" class="text-sm mb-1 whitespace-pre-wrap break-words"></pre>
-      <pre id="taf-${airport.icao}" class="text-sm whitespace-pre-wrap break-words bg-gray-50 p-2 rounded border border-gray-300"></pre>
+      <div class="flex flex-col gap-2 mb-2">
+        <div class="flex gap-2">
+          <input type="number" value="${airport.minCeiling}" step="100"
+            oninput="debouncedUpdateMinima('${airport.icao}', 'minCeiling', this.value)"
+            class="p-2 border border-gray-600 rounded-lg w-24 bg-gray-700 text-center focus:ring-2 ring-green-400" />
+          <input type="number" value="${airport.minVis}" step="0.1"
+            oninput="debouncedUpdateMinima('${airport.icao}', 'minVis', this.value)"
+            class="p-2 border border-gray-600 rounded-lg w-24 bg-gray-700 text-center focus:ring-2 ring-green-400" />
+        </div>
+        <div class="flex gap-2 items-center">
+          <input type="number" min="0" max="23" value="${airport.timeFrom !== null ? airport.timeFrom : ''}"
+            onchange="updateTime('${airport.icao}', 'timeFrom', this.value)"
+            class="p-2 border border-gray-600 rounded-lg w-16 bg-gray-700 text-center focus:ring-2 ring-blue-400" /><span>Z to</span>
+          <input type="number" min="0" max="23" value="${airport.timeTo !== null ? airport.timeTo : ''}"
+            onchange="updateTime('${airport.icao}', 'timeTo', this.value)"
+            class="p-2 border border-gray-600 rounded-lg w-16 bg-gray-700 text-center focus:ring-2 ring-blue-400" /><span>Z</span>
+        </div>
+        <button onclick="setStandardMinima('${airport.icao}')" class="text-xs text-blue-400 hover:underline">Set Standard Alternate Minima</button>
+      </div>
+      <pre id="metar-${airport.icao}" class="text-xs whitespace-pre-wrap break-words mb-1 bg-gray-900 p-2 rounded-lg border border-gray-600"></pre>
+      <pre id="taf-${airport.icao}" class="text-xs whitespace-pre-wrap break-words bg-gray-900 p-2 rounded-lg border border-gray-600"></pre>
       <div id="alert-${airport.icao}" class="mt-2 text-sm font-semibold"></div>
     `;
 
     container.appendChild(card);
+    if (showOnlyBelowMinima && !belowMinimaMap[airport.icao]) {
+      card.style.display = "none";
+    }
     fetchWeather(airport);
   });
 }
 
 async function fetchWeather(airport) {
-  const { icao, minCeiling, minVis } = airport;
+  const { icao, minCeiling, minVis, timeFrom, timeTo } = airport;
   const metarUrl = `https://avwx.rest/api/metar/${icao}?options=summary&format=json`;
   const tafUrl = `https://avwx.rest/api/taf/${icao}?options=summary&format=json`;
 
@@ -105,59 +150,56 @@ async function fetchWeather(airport) {
     const metar = await metarRes.json();
     const taf = await tafRes.json();
 
-    document.getElementById(`metar-${icao}`).textContent = `METAR: ${metar.raw}`;
+    document.getElementById(`metar-${icao}`).textContent = `METAR: ${metar.raw || "N/A"}`;
+    document.getElementById(`taf-${icao}`).textContent = `TAF: ${taf.raw || "N/A"}`;
 
-    let highlightedTAF = taf.raw;
-
-    highlightedTAF = highlightedTAF.replace(/\b(BKN|OVC|VV)(\d{3})\b/g, (match, type, level) => {
-      const feet = parseInt(level) * 100;
-      return feet < minCeiling ? `<span class="text-red-600 font-bold">${match}</span>` : match;
-    });
-
-    highlightedTAF = highlightedTAF.replace(/\b(\d+\/\d+|\d+)\s?SM\b/g, (match) => {
-      const parts = match.split("SM")[0].trim();
-      let value = parts.includes("/") ? eval(parts) : parseFloat(parts);
-      return value < minVis ? `<span class="text-red-600 font-bold">${match}</span>` : match;
-    });
-
-    document.getElementById(`taf-${icao}`).innerHTML = `TAF: ${highlightedTAF}`;
-
-    let alert = "";
-    let alertColor = "text-green-700";
-
-    taf.forecast.forEach(period => {
-      const cloud = period.clouds?.find(cloud =>
-        ["BKN", "OVC", "VV"].includes(cloud.type)
-      );
-      const ceiling = cloud?.base_ft_agl ?? (cloud?.altitude ? cloud.altitude * 100 : null);
-      const vis = period.visibility?.value ?? null;
-
-      if ((ceiling !== null && ceiling < minCeiling) || (vis !== null && vis < minVis)) {
-        alert = `⚠️ Below minima in TAF`;
-        alertColor = "text-red-700";
+    let belowMinima = false;
+    taf.forecast?.forEach(period => {
+      const hour = new Date(period.start_time.dt).getUTCHours();
+      if (withinHourWindow(hour, timeFrom, timeTo)) {
+        const cloud = period.clouds?.find(c => ["BKN", "OVC", "VV"].includes(c.type));
+        const ceiling = cloud?.base_ft_agl ?? (cloud?.altitude ? cloud.altitude * 100 : null);
+        const vis = period.visibility?.value ?? null;
+        if ((ceiling !== null && ceiling < minCeiling) || (vis !== null && vis < minVis)) {
+          belowMinima = true;
+        }
       }
     });
 
+    belowMinimaMap[icao] = belowMinima;
     const alertBox = document.getElementById(`alert-${icao}`);
-    alertBox.textContent = alert || "✅ Conditions above minima";
-    alertBox.className = `mt-2 text-sm font-semibold ${alertColor}`;
-  } catch (err) {
-    document.getElementById(`alert-${icao}`).textContent = "⚠️ Failed to fetch data";
-    document.getElementById(`alert-${icao}`).className = "mt-2 text-sm font-semibold text-yellow-700";
-  }
-}
+    const card = document.getElementById(`card-${icao}`);
 
-function refreshAll() {
-  airports.forEach(fetchWeather);
+    alertBox.textContent = belowMinima ? "⚠️ Below minima in TAF (selected hours)" : "✅ Conditions above minima";
+    alertBox.className = belowMinima
+      ? "mt-2 text-sm font-semibold text-red-400"
+      : "mt-2 text-sm font-semibold text-green-400";
+
+    card.className = belowMinima
+      ? "bg-red-900/80 p-4 rounded-2xl shadow-xl border border-red-400 transition-all duration-500"
+      : "bg-gray-800 p-4 rounded-2xl shadow-lg border border-green-500 transition-all duration-500";
+
+    if (showOnlyBelowMinima) card.style.display = belowMinima ? "block" : "none";
+  } catch {
+    document.getElementById(`alert-${icao}`).textContent = "⚠️ Failed to fetch data";
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   renderDashboard();
-  setInterval(refreshAll, refreshInterval);
-
-  document.getElementById("icaoInput").addEventListener("keydown", (e) => {
+  document.getElementById("addBtn").addEventListener("click", addAirport);
+  document.getElementById("icaoInput").addEventListener("keydown", e => {
     if (e.key === "Enter") addAirport();
   });
-
-  document.getElementById("addBtn").addEventListener("click", addAirport);
+  document.getElementById("toggleFilter").addEventListener("click", () => {
+    showOnlyBelowMinima = !showOnlyBelowMinima;
+    document.getElementById("toggleFilter").textContent = showOnlyBelowMinima
+      ? "Show All Airports"
+      : "Show Only Below Minima";
+    renderDashboard();
+  });
 });
+
+setInterval(() => {
+  airports.forEach(fetchWeather);
+}, 300000);

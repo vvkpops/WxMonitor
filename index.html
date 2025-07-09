@@ -6,25 +6,28 @@
   <title>Flight Dispatcher Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 text-gray-900 font-sans p-6">
-  <div class="max-w-6xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6">🛫 Flight Dispatcher Dashboard</h1>
-
-    <div class="flex gap-4 mb-6">
-      <input id="icaoInput" type="text" maxlength="4" placeholder="Enter ICAO (e.g. CYHZ)" class="p-2 border rounded uppercase w-48" />
-      <button id="addBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Airport</button>
-    </div>
-
-    <div class="mb-6">
-      <h2 class="text-lg font-semibold mb-2">🌐 All Airports Minima</h2>
-      <div class="flex gap-2">
-        <input id="globalCeiling" type="number" placeholder="Ceiling (ft)" class="p-2 border rounded w-32" />
-        <input id="globalVis" type="number" placeholder="Visibility (SM)" class="p-2 border rounded w-32" />
-        <button onclick="applyGlobalMinima()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Apply to All</button>
+<body class="bg-gradient-to-br from-gray-900 to-gray-800 text-gray-100 font-sans p-6 text-sm min-h-screen">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex flex-wrap justify-between items-center mb-6">
+      <h1 class="text-3xl font-extrabold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-green-400">🛫 Flight Dispatcher Dashboard</h1>
+      <div class="flex gap-4">
+        <div id="utcClock" class="px-3 py-1 rounded-full bg-green-900 text-green-300 font-mono shadow-inner"></div>
+        <div id="localClock" class="px-3 py-1 rounded-full bg-blue-900 text-blue-300 font-mono shadow-inner"></div>
       </div>
     </div>
 
-    <div id="dashboard" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    <div class="flex flex-wrap gap-3 mb-6 sticky top-0 bg-gray-900/80 p-3 z-20 rounded-lg shadow-lg backdrop-blur-md border border-gray-700">
+      <input id="icaoInput" type="text" maxlength="4" placeholder="ICAO" class="p-2 border border-gray-600 rounded-lg uppercase w-28 bg-gray-700 text-white text-center focus:ring-2 ring-blue-400" />
+      <button id="addBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow">+ Add</button>
+
+      <input id="globalCeiling" type="number" placeholder="Ceiling (ft)" step="100" class="p-2 border border-gray-600 rounded-lg w-28 bg-gray-700 text-white text-center focus:ring-2 ring-green-400" />
+      <input id="globalVis" type="number" placeholder="Vis (SM)" step="0.1" class="p-2 border border-gray-600 rounded-lg w-28 bg-gray-700 text-white text-center focus:ring-2 ring-green-400" />
+      <button onclick="applyGlobalMinima()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow">Apply to All</button>
+
+      <button id="toggleFilter" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg shadow">Show Only Below Minima</button>
+    </div>
+
+    <div id="dashboard" class="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"></div>
   </div>
 
   <script src="script.js"></script>
