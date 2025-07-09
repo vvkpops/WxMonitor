@@ -163,9 +163,10 @@ async function fetchWeather(airport) {
     const taf = await tafRes.json();
 
     document.getElementById(`metar-${icao}`).textContent = `METAR: ${metar.raw || "N/A"}`;
-    document.getElementById(`taf-${icao}`).textContent = `TAF: ${taf.raw || "N/A"}`;
 
+    let tafText = taf.raw || "N/A";
     let belowMinima = false;
+
     taf.forecast?.forEach(period => {
       const hour = new Date(period.start_time.dt).getUTCHours();
       if (withinHourWindow(hour, timeFrom, timeTo)) {
@@ -177,6 +178,21 @@ async function fetchWeather(airport) {
         }
       }
     });
+
+    if (belowMinima) {
+      tafText = tafText
+        // highlight fractional or decimal vis
+        .replace(/(\d+\/\d+|\d+(?:\.\d+)?)(SM)/g, (match, val, sm) => {
+          return parseVisibility(val) <= minVis ? `<span class="text-red-400 font-bold">${match}</span>` : match;
+        })
+        // highlight BKN/OVC ceilings
+        .replace(/(BKN|OVC|VV)(\d{3})/g, (match, type, base) => {
+          const ft = parseInt(base) * 100;
+          return ft <= minCeiling ? `<span class="text-red-400 font-bold">${match}</span>` : match;
+        });
+    }
+
+    document.getElementById(`taf-${icao}`).innerHTML = `TAF: ${tafText}`;
 
     belowMinimaMap[icao] = belowMinima;
     const alertBox = document.getElementById(`alert-${icao}`);
