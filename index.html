@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flight Dispatcher Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans p-6">
+  <div class="max-w-6xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">🛫 Flight Dispatcher Dashboard</h1>
+
+    <div class="flex gap-4 mb-6">
+      <input id="icaoInput" type="text" maxlength="4" placeholder="Enter ICAO (e.g. CYHZ)" class="p-2 border rounded uppercase w-48" />
+      <button id="addBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Airport</button>
+    </div>
+
+    <div class="mb-6">
+      <h2 class="text-lg font-semibold mb-2">🌐 All Airports Minima</h2>
+      <div class="flex gap-2">
+        <input id="globalCeiling" type="number" placeholder="Ceiling (ft)" class="p-2 border rounded w-32" />
+        <input id="globalVis" type="number" placeholder="Visibility (SM)" class="p-2 border rounded w-32" />
+        <button onclick="applyGlobalMinima()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Apply to All</button>
+      </div>
+    </div>
+
+    <div id="dashboard" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
