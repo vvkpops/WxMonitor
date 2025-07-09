@@ -168,7 +168,7 @@ async function fetchWeather(airport) {
 
     belowMinimaMap[icao] = belowMinima;
     const alertBox = document.getElementById(`alert-${icao}`);
-    const card = document.getElementById(`card-${airport.icao}`);
+    const card = document.getElementById(`card-${icao}`);
 
     alertBox.textContent = belowMinima ? "⚠️ Below minima in TAF (selected hours)" : "✅ Conditions above minima";
     alertBox.className = belowMinima
