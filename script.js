@@ -91,6 +91,18 @@ function withinHourWindow(hour, from, to) {
   return from <= to ? (hour >= from && hour <= to) : (hour >= from || hour <= to);
 }
 
+function parseVisibility(vis) {
+  if (typeof vis === "number") return vis;
+  if (typeof vis === "string") {
+    if (vis.includes('/')) {
+      const [num, denom] = vis.split('/').map(Number);
+      return denom ? num / denom : NaN;
+    }
+    return parseFloat(vis);
+  }
+  return NaN;
+}
+
 function renderDashboard() {
   const container = document.getElementById("dashboard");
   container.innerHTML = "";
@@ -159,7 +171,7 @@ async function fetchWeather(airport) {
       if (withinHourWindow(hour, timeFrom, timeTo)) {
         const cloud = period.clouds?.find(c => ["BKN", "OVC", "VV"].includes(c.type));
         const ceiling = cloud?.base_ft_agl ?? (cloud?.altitude ? cloud.altitude * 100 : null);
-        const vis = period.visibility?.value ?? null;
+        const vis = parseVisibility(period.visibility?.value);
         if ((ceiling !== null && ceiling <= minCeiling) || (vis !== null && vis <= minVis)) {
           belowMinima = true;
         }
