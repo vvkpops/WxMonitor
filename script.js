@@ -97,7 +97,7 @@ function renderDashboard() {
   airports.forEach(airport => {
     const card = document.createElement("div");
     card.id = `card-${airport.icao}`;
-    card.className = "bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-700 hover:scale-[1.02] transition-transform duration-300";
+    card.className = "bg-gray-800 p-4 rounded-2xl shadow-lg border border-gray-700 hover:scale-[1.02] transition-transform duration-300 text-gray-200";
 
     card.innerHTML = `
       <div class="flex justify-between mb-2">
@@ -123,8 +123,8 @@ function renderDashboard() {
         </div>
         <button onclick="setStandardMinima('${airport.icao}')" class="text-xs text-blue-400 hover:underline">Set Standard Alternate Minima</button>
       </div>
-      <pre id="metar-${airport.icao}" class="text-xs whitespace-pre-wrap break-words mb-1 bg-gray-900 p-2 rounded-lg border border-gray-600"></pre>
-      <pre id="taf-${airport.icao}" class="text-xs whitespace-pre-wrap break-words bg-gray-900 p-2 rounded-lg border border-gray-600"></pre>
+      <pre id="metar-${airport.icao}" class="text-xs text-gray-200 whitespace-pre-wrap break-words mb-1 bg-gray-900 p-2 rounded-lg border border-gray-600"></pre>
+      <pre id="taf-${airport.icao}" class="text-xs text-gray-200 whitespace-pre-wrap break-words bg-gray-900 p-2 rounded-lg border border-gray-600"></pre>
       <div id="alert-${airport.icao}" class="mt-2 text-sm font-semibold"></div>
     `;
 
@@ -168,7 +168,7 @@ async function fetchWeather(airport) {
 
     belowMinimaMap[icao] = belowMinima;
     const alertBox = document.getElementById(`alert-${icao}`);
-    const card = document.getElementById(`card-${icao}`);
+    const card = document.getElementById(`card-${airport.icao}`);
 
     alertBox.textContent = belowMinima ? "⚠️ Below minima in TAF (selected hours)" : "✅ Conditions above minima";
     alertBox.className = belowMinima
@@ -176,8 +176,8 @@ async function fetchWeather(airport) {
       : "mt-2 text-sm font-semibold text-green-400";
 
     card.className = belowMinima
-      ? "bg-red-900/80 p-4 rounded-2xl shadow-xl border border-red-400 transition-all duration-500"
-      : "bg-gray-800 p-4 rounded-2xl shadow-lg border border-green-500 transition-all duration-500";
+      ? "bg-red-900/80 p-4 rounded-2xl shadow-xl border border-red-400 transition-all duration-500 text-gray-200"
+      : "bg-gray-800 p-4 rounded-2xl shadow-lg border border-green-500 transition-all duration-500 text-gray-200";
 
     if (showOnlyBelowMinima) card.style.display = belowMinima ? "block" : "none";
   } catch {
