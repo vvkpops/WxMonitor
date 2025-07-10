@@ -10,27 +10,27 @@
 </head>
 <body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col">
   <div class="flex justify-between items-center p-6">
-    <div id="utcClock" class="text-green-400 text-4xl font-mono animate-pulse"></div>
-    <h1 class="text-4xl font-extrabold tracking-wide text-center flex-1 flex justify-center items-center gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div id="utcClock" class="text-green-400 text-3xl sm:text-4xl font-mono animate-pulse"></div>
+    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-wide text-center flex-1 flex justify-center items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 sm:h-10 sm:w-10 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-11.34l-.707.707M4.05 19.95l-.707.707M21 12h-1M4 12H3m16.95 7.05l-.707-.707M4.05 4.05l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
       </svg>
       Weather Minima Monitor
     </h1>
-    <div id="localClock" class="text-blue-400 text-4xl font-mono animate-pulse"></div>
+    <div id="localClock" class="text-blue-400 text-3xl sm:text-4xl font-mono animate-pulse"></div>
   </div>
-  <div class="flex flex-wrap justify-center items-center gap-4 px-6 mb-8">
-    <input id="icaoInput" type="text" placeholder="ICAO" class="py-3 px-4 w-28 bg-gray-700 border border-gray-600 rounded-2xl text-center focus:ring-2 ring-green-400 transition"/>
-    <button id="addBtn" class="bg-blue-600 hover:bg-blue-700 transition py-3 px-6 rounded-2xl font-semibold shadow-lg hover:backdrop-blur-sm">+ Add</button>
-    <div class="flex gap-3 ml-auto">
-      <input id="globalCeiling" placeholder="Ceiling" class="py-3 px-4 w-28 bg-gray-700 border border-gray-600 rounded-2xl text-center focus:ring-2 ring-green-400 transition">
-      <input id="globalVis" placeholder="Vis" class="py-3 px-4 w-28 bg-gray-700 border border-gray-600 rounded-2xl text-center focus:ring-2 ring-green-400 transition">
-      <input id="globalFrom" placeholder="From Z" class="py-3 px-4 w-28 bg-gray-700 border border-gray-600 rounded-2xl text-center focus:ring-2 ring-yellow-400 transition">
-      <input id="globalTo" placeholder="To Z" class="py-3 px-4 w-28 bg-gray-700 border border-gray-600 rounded-2xl text-center focus:ring-2 ring-yellow-400 transition">
-      <button id="applyAllBtn" class="bg-green-600 hover:bg-green-700 transition py-3 px-6 rounded-2xl font-semibold shadow-lg hover:backdrop-blur-sm">Apply to All</button>
-      <button id="toggleFilter" class="bg-orange-600 hover:bg-orange-700 transition py-3 px-6 rounded-2xl font-semibold shadow-lg hover:backdrop-blur-sm">Show Only Below Minima</button>
+  <div class="flex flex-wrap justify-center items-center gap-3 sm:gap-4 md:gap-6 lg:gap-8 px-3 md:px-6 mb-8">
+    <input id="icaoInput" type="text" placeholder="ICAO" class="py-3 px-4 w-full sm:w-28 bg-gray-700 border border-gray-600 rounded-2xl text-center focus:ring-2 ring-green-400 transition"/>
+    <button id="addBtn" class="bg-blue-600 hover:bg-blue-700 transition py-3 px-6 rounded-2xl font-semibold shadow-lg hover:backdrop-blur-sm w-full sm:w-auto">+ Add</button>
+    <div class="flex flex-wrap gap-3 ml-auto w-full sm:w-auto justify-center sm:justify-start">
+      <input id="globalCeiling" placeholder="Ceiling" class="py-3 px-4 w-full sm:w-28 bg-gray-700 border border-gray-600 rounded-2xl text-center focus:ring-2 ring-green-400 transition">
+      <input id="globalVis" placeholder="Vis" class="py-3 px-4 w-full sm:w-28 bg-gray-700 border border-gray-600 rounded-2xl text-center focus:ring-2 ring-green-400 transition">
+      <input id="globalFrom" placeholder="From Z" class="py-3 px-4 w-full sm:w-28 bg-gray-700 border border-gray-600 rounded-2xl text-center focus:ring-2 ring-yellow-400 transition">
+      <input id="globalTo" placeholder="To Z" class="py-3 px-4 w-full sm:w-28 bg-gray-700 border border-gray-600 rounded-2xl text-center focus:ring-2 ring-yellow-400 transition">
+      <button id="applyAllBtn" class="bg-green-600 hover:bg-green-700 transition py-3 px-6 rounded-2xl font-semibold shadow-lg hover:backdrop-blur-sm w-full sm:w-auto">Apply to All</button>
+      <button id="toggleFilter" class="bg-orange-600 hover:bg-orange-700 transition py-3 px-6 rounded-2xl font-semibold shadow-lg hover:backdrop-blur-sm w-full sm:w-auto">Show Only Below Minima</button>
     </div>
   </div>
-  <div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-6 pb-12"></div>
+  <div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 px-3 md:px-6 pb-12"></div>
 </body>
 </html>
