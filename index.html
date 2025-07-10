@@ -32,5 +32,12 @@
     </div>
   </div>
   <div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 px-3 md:px-6 pb-12"></div>
+  <div id="notamPanel" class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2/5 h-3/4 bg-gray-800 border border-gray-600 rounded-2xl p-4 overflow-y-auto z-50 shadow-2xl">
+    <div class="flex justify-between items-center mb-2">
+      <h2 id="notamTitle" class="text-xl font-bold"></h2>
+      <button onclick="closeNotams()" class="text-red-400 hover:text-red-600 text-2xl">✖</button>
+    </div>
+    <div id="notamContent" class="w-full h-5/6 overflow-y-auto"></div>
+  </div>
 </body>
 </html>

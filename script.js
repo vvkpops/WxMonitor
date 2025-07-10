@@ -183,7 +183,7 @@ function renderDashboard() {
     `;
 
     container.appendChild(card);
-    fetchWeather(airport);
+    fetchWeather(airport); card.innerHTML += `<button onclick=\"loadNotams('${airport.icao}')\" class=\"mt-2 text-yellow-400 hover:text-yellow-600\">📜 View NOTAMs</button>`;
   });
 }
 
@@ -201,3 +201,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   setInterval(() => { airports.forEach(fetchWeather); }, 300000);
 });
+
+function loadNotams(icao) {
+  document.getElementById("notamPanel").classList.remove("hidden");
+  document.getElementById("notamTitle").textContent = `NOTAMs for ${icao}`;
+  document.getElementById("notamContent").innerHTML = `<iframe src='https://ourairports.com/airports/${icao}/notams.html' class='w-full h-full border-0'></iframe>`;
+}
+function closeNotams() {
+  document.getElementById("notamPanel").classList.add("hidden");
+}
